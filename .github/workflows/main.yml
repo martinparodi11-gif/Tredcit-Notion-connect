@@ -8,8 +8,10 @@ on:
     - cron: "0 11 * * *"
   workflow_dispatch: {}   # permite ejecutarlo a mano desde la pestaña Actions
 
+# Solo lectura: este workflow NO escribe en el repo (sin keepalive),
+# así evitamos cualquier bloqueo de acceso de escritura al repositorio.
 permissions:
-  contents: write          # necesario para el paso keepalive
+  contents: read
 
 jobs:
   run:
@@ -28,6 +30,7 @@ jobs:
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: python tredict_to_notion.py
 
-      # Evita que GitHub desactive el cron tras 60 días de inactividad del repo.
-      - name: Keepalive
-        uses: gautamkrishnar/keepalive-workflow@v2
+# Nota: quité el paso "keepalive" (que evitaba el apagado del cron a los 60 días)
+# porque era lo único que requería acceso de escritura al repo. Una vez que la
+# cuenta quede desbloqueada, lo volvemos a agregar, o basta con que hagas
+# cualquier commit en el repo cada <60 días.
