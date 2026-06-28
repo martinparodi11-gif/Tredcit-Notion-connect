@@ -1,0 +1,33 @@
+# Coloca este archivo en tu repo en la ruta:  .github/workflows/daily-training-summary.yml
+name: Resumen diario de entrenamiento
+
+on:
+  schedule:
+    # 11:00 UTC = 06:00 America/Lima (UTC-5). GitHub usa SIEMPRE UTC.
+    # Puede retrasarse 10-30 min en horas pico (normal en GitHub Actions).
+    - cron: "0 11 * * *"
+  workflow_dispatch: {}   # permite ejecutarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write          # necesario para el paso keepalive
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar resumen Tredict -> Notion
+        env:
+          TREDICT_TOKEN: ${{ secrets.TREDICT_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: python tredict_to_notion.py
+
+      # Evita que GitHub desactive el cron tras 60 días de inactividad del repo.
+      - name: Keepalive
+        uses: gautamkrishnar/keepalive-workflow@v2
